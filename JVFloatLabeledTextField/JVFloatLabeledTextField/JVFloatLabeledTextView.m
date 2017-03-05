@@ -33,6 +33,7 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
 
 @interface JVFloatLabeledTextView ()
 
+@property (nonatomic) CGFloat startingTextContainerInsetTop;
 
 @end
 
@@ -52,7 +53,7 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
     self = [super initWithCoder:aDecoder];
     if (self) {
         [self commonInit];
-
+        
         // force setter to be called on a placeholder defined in a NIB/Storyboard
         if (self.placeholder) {
             self.placeholder = self.placeholder;
@@ -63,11 +64,15 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
 
 - (void)commonInit
 {
+    
+    CGFloat inset = 15.0;
+    self.textContainerInset = UIEdgeInsetsMake(16.0, self.textContainerInset.left, 16.0, self.textContainerInset.right);
     self.startingTextContainerInsetTop = self.textContainerInset.top;
     self.floatingLabelShouldLockToTop = YES;
-    self.textContainer.lineFragmentPadding = 0;
+    self.textContainer.lineFragmentPadding = inset;
     
-    _placeholderLabel = [[UILabel alloc] initWithFrame:self.frame];
+    _placeholderLabel = [[UILabel alloc] initWithFrame: CGRectMake(inset, 0, self.frame.size.width - inset * 2, self.frame.size.height)];
+    
     if (!self.font) {
         // by default self.font may be nil - so make UITextView use UILabel's default
         self.font = _placeholderLabel.font;
@@ -77,7 +82,7 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
     _placeholderLabel.numberOfLines = 0;
     _placeholderLabel.lineBreakMode = NSLineBreakByWordWrapping;
     _placeholderLabel.backgroundColor = [UIColor clearColor];
-    _placeholderTextColor = [JVFloatLabeledTextView defaultiOSPlaceholderColor];
+    _placeholderTextColor = [UIColor colorWithRed:178/255 green:176/255 blue:178/255 alpha:1.0];
     _placeholderLabel.textColor = _placeholderTextColor;
     [self insertSubview:_placeholderLabel atIndex:0];
     
@@ -85,16 +90,16 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
     _floatingLabel.alpha = 0.0f;
     _floatingLabel.backgroundColor = self.backgroundColor;
     [self addSubview:_floatingLabel];
-	
+    
     // some basic default fonts/colors
-    _floatingLabelFont = [self defaultFloatingLabelFont];
+    _floatingLabelFont = [UIFont fontWithName:@"OpenSans-Semibold" size:14.0];
     _floatingLabel.font = _floatingLabelFont;
-    _floatingLabelTextColor = [UIColor grayColor];
+    _floatingLabelTextColor = [UIColor colorWithRed:34/255 green:34/255 blue:34/255 alpha:1.0];
     _floatingLabel.textColor = _floatingLabelTextColor;
     _animateEvenIfNotFirstResponder = NO;
     _floatingLabelShowAnimationDuration = kFloatingLabelShowAnimationDuration;
     _floatingLabelHideAnimationDuration = kFloatingLabelHideAnimationDuration;
-
+    
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(layoutSubviews)
                                                  name:UITextViewTextDidChangeNotification
@@ -181,7 +186,7 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
     
     _placeholderLabel.alpha = [self.text length] > 0 ? 0.0f : 1.0f;
     _placeholderLabel.frame = CGRectMake(textRect.origin.x, textRect.origin.y,
-                                         placeholderLabelSize.width, placeholderLabelSize.height);
+                                         placeholderLabelSize.width - 2 * textRect.origin.x, placeholderLabelSize.height);
     
     [self setLabelOriginForTextAlignment];
     
@@ -274,8 +279,8 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
 
 - (void)setLabelOriginForTextAlignment
 {
-    CGFloat floatingLabelOriginX = [self textRect].origin.x;
-    CGFloat placeholderLabelOriginX = floatingLabelOriginX;
+    CGFloat floatingLabelOriginX = [self textRectWithoutLineFragmentPadding].origin.x;
+    CGFloat placeholderLabelOriginX = [self textRect].origin.x;;
     
     if (self.textAlignment == NSTextAlignmentCenter) {
         floatingLabelOriginX = (self.frame.size.width/2) - (_floatingLabel.frame.size.width/2);
@@ -308,6 +313,17 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
     
     if (self.textContainer) {
         rect.origin.x += self.textContainer.lineFragmentPadding;
+        rect.origin.y += self.textContainerInset.top;
+    }
+    
+    return CGRectIntegral(rect);
+}
+
+- (CGRect)textRectWithoutLineFragmentPadding
+{
+    CGRect rect = UIEdgeInsetsInsetRect(self.bounds, self.contentInset);
+    
+    if (self.textContainer) {
         rect.origin.y += self.textContainerInset.top;
     }
     
