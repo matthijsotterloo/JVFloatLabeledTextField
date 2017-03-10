@@ -134,7 +134,7 @@ IB_DESIGNABLE
  * Top value for textContainerInset
  * Change this value if you need more padding between text input and floating label
  */
-@property (nonatomic) CGFloat startingTextContainerInsetTop;
+@property (nonatomic, readonly) CGFloat startingTextContainerInsetTop;
 
 /**
  *  Sets the placeholder and the floating title
