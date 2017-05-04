@@ -228,7 +228,7 @@ static CGFloat const kFloatingLabelHideAnimationDuration = 0.3f;
     CGSize textFieldIntrinsicContentSize = [super intrinsicContentSize];
     [_floatingLabel sizeToFit];
     return CGSizeMake(textFieldIntrinsicContentSize.width,
-                      textFieldIntrinsicContentSize.height + _floatingLabelYPadding + _floatingLabel.bounds.size.height);
+                      textFieldIntrinsicContentSize.height + _floatingLabel.bounds.size.height);
 }
 
 - (void)setCorrectPlaceholder:(NSString *)placeholder
